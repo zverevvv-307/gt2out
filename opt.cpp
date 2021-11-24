@@ -3,28 +3,9 @@
 #include "all_std.h"
 
 using namespace std;
-//------------------------------------------------------------------------------
-Options * Options::instance ()
-{
-    static Options singleton;
-    return &singleton;
-}
-//------------------------------------------------------------------------------
-Options::Options ()
-    :
-      nnov_nocodec(false),
-      is_ipx(false),
-      local_address_gt("0.0.0.0"),
-      local_address_kit("0.0.0.0"),
-      remote_address("127.0.0.1"),
-      remote_port(30001),
-      queue_watermark(1024),
-      log_level("info"),
-      verbose(0),
-      spy(0)
-{
-}
-//------------------------------------------------------------------------------
+
+
+
 int Options::parse_args (int argc, char *argv[])
 {
     po::options_description opts("Options");
@@ -32,27 +13,19 @@ int Options::parse_args (int argc, char *argv[])
         ("help,h", "produce help message")
             ("config-file,c", po::value< std::string >(), "input configuration")
                 ("remote-address,r", po::value< std::string >(), "remote address")
-                    ("local-address-kit,l", po::value< std::string >(), "interface to bind local socket for kit")
+                    ("local-address-wan,l", po::value< std::string >(), "interface to bind local socket for WAN")
                         ("local-address-gt,g", po::value< std::string >(), "interface to bind local gt socket")
-                            ("ipx", "open ipx socket")
-                                ("receive-spy,s", po::value< int >(), "receive spy object.")
-                                    ("verbose,v", po::value< int >(&verbose)->default_value(0), "verbose")
+                            ("no-ipx", "dont open ipx socket")
         ;
     po::options_description hidden("Configuration options");
     hidden.add_options()
-        ("log-level", po::value< std::string >(), "log level.")
-            ("remote-port,p", po::value< int >(), "remote port.")
-                ("queue-watermark,q", po::value< int >(), "queue watermark")
-                    ("nnov-nocodec", "n.novgorod ipx protokol")
-        ;
-    po::options_description hidden2("Hidden options");
-    hidden2.add_options()
         ("hh", "produce more help message")
-            (MKOK, "monki")
+        ("timeout-sec", po::value< int >(&timeout_sec)->default_value(7), "sendloop timeout sec.")
+            ("remote-port,p", po::value< int >(&remote_port)->default_value(43210), "remote port.")
         ;
 
     po::options_description all_options;
-    all_options.add(opts).add(hidden).add(hidden2);
+    all_options.add(opts).add(hidden);
 
     po::positional_options_description p;
     p.add("config-file", 1);
@@ -61,53 +34,39 @@ int Options::parse_args (int argc, char *argv[])
     po::notify(vm);
 
     if (vm.count("help")) {
-        std::cout << opts << "\n";
+        std::cout << opts << std::endl;
         return 0;
     }
     if (vm.count("hh")) {
-        std::cout << opts << hidden << "\n";
+        std::cout << opts << hidden << std::endl;
         return 0;
     }
 
-    if (vm.count("log-level"))
-        log_level = vm["log-level"].as< std::string  >();
-    else log_level = "info";
+    std::cout << "Config:" << std::endl;
 
     if (vm.count("remote-address"))
         remote_address = vm["remote-address"].as< std::string >();
-    std::cout << "remote-address: "<< remote_address.c_str() << "\n";
+    std::cout << "remote-address: "<< remote_address.c_str() << std::endl;
+    std::cout << "remote-port: "<< remote_port << std::endl;
 
-    if (vm.count("remote-port"))
-        remote_port = vm["remote-port"].as< int >();
-    std::cout << "remote-port: "<< remote_port << "\n";
-
-    if (vm.count("local-address-kit"))
-        local_address_kit = vm["local-address-kit"].as< std::string >();
-    std::cout << "local-address-kit: "<< local_address_kit.c_str() << "\n";
+    if (vm.count("local-address-wan"))
+        local_address_wan = vm["local-address-wan"].as< std::string >();
+    std::cout << "local-address-wan: "<< local_address_wan.c_str() << std::endl;
 
     if (vm.count("local-address-gt"))
         local_address_gt = vm["local-address-gt"].as< std::string >();
-    std::cout << "local-address-gt: "<< local_address_gt.c_str() << "\n";
+    std::cout << "local-address-gt: "<< local_address_gt.c_str() << std::endl;
 
-    if (vm.count("queue-watermark"))
-        queue_watermark = vm["queue-watermark"].as< int >();
-    std::cout << "queue-watermark: "<< queue_watermark << "\n";
+    if (vm.count("no-ipx"))
+        no_ipx = true;
+    std::cout << "no ipx: " << no_ipx << std::endl;
 
-    if (vm.count("ipx"))
-        is_ipx = true;
-    std::cout << "is ipx: " << is_ipx << "\n";
-
-    if (vm.count("nnov-nocodec"))
-        nnov_nocodec = true;
-    //    std::cout << "nnov-nocodec: " << int(nnov_nocodec) << "\n";
-
-    if (vm.count("config-file"))
-        config_file = vm["config-file"].as< std::string >();
-    else {
-        std::cout << endl << opts << endl;
-        return -1;
+    if (vm.count("config-file")){
+      config_file = vm["config-file"].as< std::string >();
+      std::cout << "config-file: "<< config_file.c_str() << std::endl;
     }
-    std::cout << "config-file: "<< config_file.c_str() << "\n";
+    else
+      std::cout << "rejime: Client." << std::endl;
 
 
     return 1;

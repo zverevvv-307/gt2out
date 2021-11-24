@@ -2,17 +2,13 @@
 #include <iomanip>
 #include <string>
 
+
+#include "asio_pch.h"
+#include "gtclient.h"
+#include "gtserver.h"
 #include "opt.h"
 
-#include "rtask.h"
-#include "stask.h"
-#include "statist.h"
-#include "gttsfilter.h"
-#include "gtreceivespy.h"
-#include "asio_pch.h"
 
-
-//using namespace std;
 using namespace boost::asio;
 
 int main(int argc, char *argv[])
@@ -34,44 +30,18 @@ int main(int argc, char *argv[])
         };
         e.AddCtrlCHandling();
 
+        std::shared_ptr<GtServer> server;
+        std::shared_ptr<GtClient> client;
+        if( !Options::instance()->config_file.empty())
+          server = std::make_shared<GtServer>( e.GetIOContext() );
+        else
+          client = std::make_shared<GtClient>( e.GetIOContext() );
 
-        //spy ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(Options::instance()->spy){
-          GtReceiveSpy r( Options::instance()->spy
-                         , e.GetIOContext()
-                         , Options::instance()->local_address_kit
-                         , Options::instance()->remote_port);
-          e.Run(1);
-          return 0;
-        }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-        GtDtgrmQueue queue( Options::instance()->queue_watermark );
-
-        SenderTask  stask(e.GetIOContext(), queue);
-        if( !stask.open() ) {
-            return 1;
-        }
-
-        ReceiveTask rtask(e.GetIOContext(), queue);
-        if( !rtask.open() ) {
-            return 1;
-        }
-
-        Statistics statist( e.GetIOContext() );
-        statist.data_.push_back(&queue.count_);//0 не нужно чистить
-        statist.data_.push_back(&rtask.count_);//1
-        statist.data_.push_back(&rtask.errors_);//2
-        statist.data_.push_back(&stask.count_);//3
-        statist.data_.push_back(&stask.errors_);//4
-        statist.data_.push_back(&stask.size_);//5
-
-        e.Run(1);
+        e.Run(3); //!!blocking send
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     }
     catch (std::exception& e) {
-        std::cerr<<"\nmain->std::exception: "<<e.what()<<"\n";
+        std::cerr<<"\nmain->std::exception: "<<e.what()<<std::endl;
     }
     catch (...) {
         std::cerr<<"\nmain->catch (...) ...\n";
@@ -79,4 +49,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-//------------------------------------------------------------------------------

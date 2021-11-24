@@ -1,18 +1,8 @@
-//----------------------------------------------------------------------------
-//  Copyright 2013. All Rights Reserved.
-//  Author:   Vladislav Zverev
-//----------------------------------------------------------------------------
-#ifndef STATIST_H
-#define STATIST_H
+#pragma once
 
-#include <iostream>
-#include <vector>
-#include <iomanip>
+#include <array>
 #include <string>
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/atomic.hpp>
-#include "gtdtgrmqueue.h"
 
 
 class Statistics
@@ -20,8 +10,7 @@ class Statistics
     void handle_timeout(const boost::system::error_code& error);
     boost::asio::deadline_timer timer_;
 
-    typedef std::vector<boost::atomic_int*> statists_type;
-
+    using statists_type = std::array<std::atomic_int*, 3>;
     int dt_milliseconds;
 
 public:
@@ -32,4 +21,3 @@ public:
     void print_and_clear();
 };
 
-#endif // STATIST_H

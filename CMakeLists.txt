@@ -14,7 +14,6 @@ target_link_libraries (${PROJECT_NAME}
 			vx
 			gtlan
 			ipx
-			vxsqlite
 			Boost::program_options
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE GIT_REVISION="${${PROJECT_NAME}_GIT_REVISION}" )

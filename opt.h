@@ -1,42 +1,28 @@
-#ifndef OPT_H
-#define OPT_H
+#pragma once
 
 #include <string>
 #include <boost/program_options.hpp>
 
-//------------------------------------------------------------------------------
+
 namespace po = boost::program_options;
 
 class Options
 {
-    Options ();
-    ~Options () = default;
-
+  po::variables_map vm;
 public:
 
-    static Options *instance ();
-    po::variables_map vm;
-    int parse_args (int argc, char *argv[]);
+  static Options *instance (){
+    static Options singleton;
+    return &singleton;
+  }
+  int parse_args (int argc, char *argv[]);
 
-    std::string config_file;
-    bool nnov_nocodec;
-    bool is_ipx;
+  std::string config_file;
+  bool no_ipx = false;
+  std::string local_address_gt = "0.0.0.0";
+  std::string local_address_wan = "0.0.0.0";
+  std::string remote_address = "127.0.0.1";
+  int remote_port = 43210;
+  int timeout_sec = 7;
 
-    std::string local_address_gt;
-    std::string local_address_kit;
-    std::string remote_address;
-    int remote_port;
-
-    int queue_watermark;
-    std::string log_level;
-    int  verbose;
-
-    int spy;
 };
-//------------------------------------------------------------------------------
-#define MKOK "mkokk"
-
-
-
-
-#endif /* OPTIONS_H */
