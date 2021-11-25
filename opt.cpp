@@ -16,11 +16,12 @@ int Options::parse_args (int argc, char *argv[])
                     ("local-address-wan,l", po::value< std::string >(), "interface to bind local socket for WAN")
                         ("local-address-gt,g", po::value< std::string >(), "interface to bind local gt socket")
                             ("no-ipx", "dont open ipx socket")
+        ("no-webui", "dont open Web UI")
         ;
     po::options_description hidden("Configuration options");
     hidden.add_options()
         ("hh", "produce more help message")
-        ("timeout-sec", po::value< int >(&timeout_sec)->default_value(7), "sendloop timeout sec.")
+        ("timeout-sec", po::value< int >(&timeout_sec)->default_value(5), "sendloop timeout sec.")
             ("remote-port,p", po::value< int >(&remote_port)->default_value(43210), "remote port.")
         ;
 
@@ -42,7 +43,7 @@ int Options::parse_args (int argc, char *argv[])
         return 0;
     }
 
-    std::cout << "Config:" << std::endl;
+    std::cout << std::endl << "Config:" << std::endl;
 
     if (vm.count("remote-address"))
         remote_address = vm["remote-address"].as< std::string >();
@@ -58,8 +59,11 @@ int Options::parse_args (int argc, char *argv[])
     std::cout << "local-address-gt: "<< local_address_gt.c_str() << std::endl;
 
     if (vm.count("no-ipx"))
-        no_ipx = true;
+      no_ipx = true;
     std::cout << "no ipx: " << no_ipx << std::endl;
+
+    if (vm.count("no-webui"))
+      no_webui = true;
 
     if (vm.count("config-file")){
       config_file = vm["config-file"].as< std::string >();
@@ -67,6 +71,7 @@ int Options::parse_args (int argc, char *argv[])
     }
     else
       std::cout << "rejime: Client." << std::endl;
+    std::cout << std::endl;
 
 
     return 1;

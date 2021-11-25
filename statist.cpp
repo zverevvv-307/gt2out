@@ -7,21 +7,21 @@
 
 
 Statistics::Statistics( boost::asio::io_context& io_context, int dt )
-    : timer_( io_context )
-      , data_()
+    : timer_( io_context ),
+      dt_milliseconds(dt),
+      data_()
 {
-  dt_milliseconds = dt;
-  timer_.expires_from_now( boost::posix_time::milliseconds(dt_milliseconds) );
-  timer_.async_wait( boost::bind(&Statistics::handle_timeout, this, boost::asio::placeholders::error) );
+  async_loop();
 }
 
-void Statistics::handle_timeout(const boost::system::error_code& error)
+void Statistics::async_loop()
 {
-  if (!error) {
-    print_and_clear();
-    timer_.expires_from_now( boost::posix_time::milliseconds(dt_milliseconds) );
-    timer_.async_wait( boost::bind(&Statistics::handle_timeout, this, boost::asio::placeholders::error) );
-  }
+  timer_.expires_from_now(std::chrono::milliseconds(dt_milliseconds));
+  timer_.async_wait( [this](const boost::system::error_code& ec){
+    if(ec) return;
+    this->print_and_clear();
+    async_loop();
+  });
 }
 
 void Statistics::print_and_clear()
@@ -39,7 +39,8 @@ void Statistics::print_and_clear()
           "out: %3d "
           "-> %3d B/s"
           ,tmp[0]
-          ,tmp[1],tmp[2]*1000/dt_milliseconds
+          ,tmp[1]
+          ,tmp[2]*1000/dt_milliseconds
           );
   std::cout << Vx::now_time().c_str() << " " << &txt[0] << std::endl;
 }

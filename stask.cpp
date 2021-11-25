@@ -1,5 +1,6 @@
 #include "stask.h"
 #include "opt.h"
+#include "helpers.h"
 
 #include <boost/bind/bind.hpp>
 
@@ -13,7 +14,7 @@ if (ec) { \
       ec.clear(); \
       return false; }
 
-bool SenderTask::open()
+bool SenderTask::open(int hops)
 {
   ba::ip::address remote_address = ba::ip::address::from_string( Options::instance()->remote_address );
   unsigned short remote_port = Options::instance()->remote_port;
@@ -22,14 +23,17 @@ bool SenderTask::open()
   remote_endpoint_ = ba::ip::udp::endpoint(remote_address, remote_port);
   socket_.open(remote_endpoint_.protocol(), ec);
   print_ec();
+  this->socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true), ec);
+  print_ec();
+
   if (remote_address.is_v4() && remote_address.to_v4().is_multicast()) {
-    socket_.set_option(ba::ip::multicast::hops(4), ec);
+    socket_.set_option(ba::ip::multicast::hops(hops), ec);
     print_ec();
     ba::ip::multicast::outbound_interface ointerface1(ba::ip::address_v4::from_string( Options::instance()->local_address_wan) );
     socket_.set_option(ointerface1, ec);
     print_ec();
   } else {
-    socket_.set_option(ba::ip::unicast::hops(4), ec);
+    socket_.set_option(ba::ip::unicast::hops(hops), ec);
     print_ec();
   }
 
@@ -40,15 +44,34 @@ bool SenderTask::open()
 }
 
 
+void SenderTask::send_(Filter::FilterData& rec){
+  int sz = 0;
+  if(rec.store.tick!=0){
+    sz = rec.cfg.datasize;
+    rec.store.tick=0;
+  }
+
+  TDatagram2& data = rec.store.Dtgrm;
+  data.Size = sz;
+
+  this->socket_.send_to( ba::buffer( &data,  TDatagram2_HEADER_LN+sz ), remote_endpoint_ );
+  this->count_++;
+  this->size_ += sz;
+}
+
 void SenderTask::send_all()
 {
-  filter_->for_each([this](Filter::FilterData& rec){
-    TDatagram2& data = rec.store.Dtgrm;
-    int sz = TDatagram2_HEADER_LN + data.Size;
-    this->socket_.send_to( ba::buffer( &data,  sz ), remote_endpoint_ );
-    this->count_++;
-    this->size_ += sz;
+  static uint32_t count=0;
+  bool renew = (count++ % 7) == 0;//шлем полную каждый 7 цикл
+
+  filter_->for_each([&](Filter::FilterData& rec){
+    if(this->last_send_at<rec.store.msec){
+      if(renew)
+        rec.store.tick++;
+      this->send_(rec);
+    }
   });
+  this->last_send_at = Vx::timestamp();
 }
 
 void SenderTask::async_loop()

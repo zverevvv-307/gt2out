@@ -4,6 +4,7 @@ project(${TARGET_NAME} VERSION 21.12)
 
 include(my_boost)
 include(my_git)
+#include(http)
 
 file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
@@ -14,6 +15,7 @@ target_link_libraries (${PROJECT_NAME}
 			vx
 			gtlan
 			ipx
+#                        httplib
 			Boost::program_options
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE GIT_REVISION="${${PROJECT_NAME}_GIT_REVISION}" )

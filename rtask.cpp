@@ -14,14 +14,14 @@ using namespace std;
 bool ReceiveTask::open()
 {
   if( !Options::instance()->no_ipx) { // old net
-    if( !ipx_.open( true, [](const std::string& e) { std::cerr<<"IPX: "<<e<<std::endl; } ) )
+    if( !ipx_.open( true, [](const std::string& e) { std::cerr<<std::endl<<"IPX: "<<e<<std::endl; } ) )
       return false;
     ipx_.start_receiver( [this](const TDatagram& d) { processI(d); } );
   }
   else { // multicast
-    if( !mcast_.open([](const std::string& e) { std::cerr<<"MCAST: "<<e<<std::endl; }
+    if( !mcast_.open([](const std::string& e) { std::cerr<<std::endl<<"MCAST: "<<e<<std::endl; }
                      ,Options::instance()->local_address_gt.empty() ? nullptr : Options::instance()->local_address_gt.c_str()
-                     )
+                     ,1)
         )
       return false;
     mcast_.start_receiver( [this](const TDatagram2& d2, const char* )  { processI2(d2); } );

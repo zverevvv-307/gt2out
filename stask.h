@@ -29,7 +29,10 @@ public:
                                                           ,filter_(f)
   { }
 
-  bool open();
+  bool open(int hops=16);
 
+private:
+  void send_(Filter::FilterData &rec);
+  uint32_t last_send_at = 0;
 };
 
