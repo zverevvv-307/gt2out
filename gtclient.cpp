@@ -49,8 +49,8 @@ void GtClient::handle_receive_from(const boost::system::error_code& err, size_t 
 
       cell.msec = Vx::timestamp();
       cell.time = Vx::time_t32_now();
-
       mcast_.blocking_send(cell.Dtgrm);
+
       cout << setw(4) << bytes_recvd << "; "
            << setw(12) << dtgrm->Type <<"; "
            << setw(12) << dtgrm->Name <<"; "
