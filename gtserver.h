@@ -11,14 +11,16 @@
 
 class GtServer
 {
-  FilterPtr filter_;
   std::unique_ptr<SenderTask> stask;
   std::unique_ptr<ReceiveTask> rtask;
   std::unique_ptr<Statistics> statist;
 
+  static inline FilterPtr filter_;
+
 public:
-  GtServer( boost::asio::io_service& io_service )
-      : filter_( std::make_shared<Filter>() ) {
+
+  GtServer( boost::asio::io_service& io_service ) {
+    filter_ = std::make_shared<Filter>() ;
     if( !filter_->open() )
       throw std::runtime_error("Filter failed.");
     stask = std::make_unique<SenderTask>(io_service, filter_);
@@ -35,5 +37,7 @@ public:
 
     std::cout <<std::endl<<"Server started."<< std::endl<< std::endl;
   }
+
+  static const FilterPtr get_filter() { return filter_; }
 };
 

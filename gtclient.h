@@ -28,8 +28,8 @@ class GtClient
 
   using StorageKey = std::pair<int, std::string>;
   using StorageMap = std::map< StorageKey, TDatagramPacket2 >;
-  StorageMap storage_;
-  std::mutex mtx_;
+  static inline StorageMap storage_;
+  static inline std::mutex mtx_;
 
   TDatagramPacket2& get(const StorageKey& key) {
     std::lock_guard<std::mutex> guard(mtx_);
@@ -38,6 +38,12 @@ class GtClient
 
 public:
   GtClient( boost::asio::io_service& io_service );
+
+  static void for_each_packet( std::function<void(const TDatagramPacket2& )> fun ) {
+    std::lock_guard<std::mutex> guard(mtx_);
+    for( auto&& i : storage_ )
+      fun(i.second);
+  }
 
 };
 

@@ -3,7 +3,7 @@
 #include <map>
 #include <chrono>
 #include <filesystem>
-#include "WebWorker.h"
+#include <optional>
 #include "http.h"
 
 
@@ -26,8 +26,26 @@ enum ResponceStatus
 
 class WebUI {
   static inline http::Server srv;
-  static inline std::unique_ptr<WebWorker> web_worker;
   static inline fs::path storage_dir = "storage";
+
+
+  class WebWorker {
+    std::unique_ptr<std::thread> workthread;
+    httplib::Server *server;
+
+  public:
+    WebWorker(httplib::Server *server) : server(server) {};
+    ~WebWorker() { close(); }
+
+    bool open(const char *intrf = "0.0.0.0", int port = 8088,
+              std::optional<httplib::Logger> log_handler = std::nullopt);
+    void close();
+    void run() {
+      this->workthread->join();
+    }
+  };
+  static inline std::unique_ptr<WebWorker> web_worker;
+
 
 public:
   using GetRawHandler = http::Server::Handler;
@@ -41,7 +59,7 @@ public:
 
   //main
   static void run(const std::string& intrf, int port_number);
-  static void close() { web_worker.release(); }
+  static void stop() { web_worker.release(); }
 
   using GetHandlerType = std::function<bool(const http::Request&, std::string&)>;
   using PostHandlerType = std::function<bool(const http::Request&, const std::string&)>;
@@ -56,7 +74,7 @@ public:
       try {
         std::string result;
         if ( handler(req, result) ) {
-          res.set_content(result, "application/json");
+          res.set_content(result, "text/plain");
           res.status = ResponceStatus::Ok;
         } else res.status = ResponceStatus::Im_a_teapot;
       }

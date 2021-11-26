@@ -22,11 +22,12 @@ public:
   std::atomic_int count_=0;
   std::atomic_int size_=0;
 
-  SenderTask(boost::asio::io_context& ios, FilterPtr f): io_context(ios)
-                                                          ,socket_(ios)
-                                                          ,remote_endpoint_()
-                                                          ,timer_(ios)
-                                                          ,filter_(f)
+  SenderTask(boost::asio::io_context& ios, FilterPtr f)
+      : io_context(ios)
+        ,socket_(ios)
+        ,remote_endpoint_()
+        ,timer_(ios)
+        ,filter_(f)
   { }
 
   bool open(int hops=16);

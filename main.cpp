@@ -8,7 +8,7 @@
 #include "gtserver.h"
 #include "opt.h"
 
-//#include "WebUI.h"
+#include "WebUI.h"
 
 
 using namespace boost::asio;
@@ -39,10 +39,10 @@ int main(int argc, char *argv[])
         else
           client = std::make_shared<GtClient>( e.GetIOContext() );
 
-//        if( !Options::instance()->no_webui )
-//          WebUI::run("0.0.0.0", 8088);
-
+        if( !Options::instance()->no_webui )
+          WebUI::run("0.0.0.0", 8088);
         e.Run(3); //!!blocking send
+        WebUI::stop();
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     }
     catch (std::exception& e) {
