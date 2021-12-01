@@ -41,7 +41,7 @@ class WebUI {
               std::optional<httplib::Logger> log_handler = std::nullopt);
     void close();
     void run() {
-      this->workthread->join();
+//      this->workthread->join();
     }
   };
   static inline std::unique_ptr<WebWorker> web_worker;
