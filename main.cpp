@@ -41,6 +41,15 @@ int main(int argc, char *argv[])
 
         if( !Options::instance()->no_webui )
           WebUI::run("0.0.0.0", 8088);
+
+        //самоуничтожитель
+        boost::asio::steady_timer timer_(e.GetIOContext());
+        if(Options::instance()->timeout_exit>0){
+          timer_.expires_from_now(std::chrono::minutes(Options::instance()->timeout_exit));
+          timer_.async_wait( [](const boost::system::error_code& ) { std::exit(0); } );
+        }
+
+
         e.Run(3); //!!blocking send
         WebUI::stop();
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

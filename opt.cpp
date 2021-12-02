@@ -22,6 +22,7 @@ int Options::parse_args (int argc, char *argv[])
     hidden.add_options()
         ("hh", "produce more help message")
         ("timeout-sec", po::value< int >(&timeout_sec)->default_value(5), "sendloop timeout sec.")
+        ("timeout-to-exit,e", po::value< int >(&timeout_exit)->default_value(0), "timeout to exit min.")
             ("remote-port,p", po::value< int >(&remote_port)->default_value(43210), "remote port.")
         ;
 

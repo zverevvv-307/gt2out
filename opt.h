@@ -25,5 +25,5 @@ public:
   std::string remote_address = "127.0.0.1";
   int remote_port = 43210;
   int timeout_sec = 5;
-
+  int timeout_exit = 0;
 };
