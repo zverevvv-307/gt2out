@@ -62,16 +62,22 @@ void SenderTask::send_(Filter::FilterData& rec){
 void SenderTask::send_all()
 {
   static uint32_t count=0;
-  bool renew = (count++ % 7) == 0;//шлем полную каждый 7 цикл
+//  bool renew = (count++ % 7) == 0;//шлем полную каждый 7 цикл
+
+  auto last_send_at = this->last_send_at;
+  this->last_send_at = Vx::timestamp();
 
   filter_->for_each([&](Filter::FilterData& rec){
-    if(this->last_send_at<rec.store.msec){
-      if(renew)
-        rec.store.tick++;
+    if(last_send_at<rec.store.msec){
       this->send_(rec);
     }
+//    else {
+//        if(renew){
+//            rec.store.tick++;
+//            this->send_(rec);
+//        }
+//    }
   });
-  this->last_send_at = Vx::timestamp();
 }
 
 void SenderTask::async_loop()

@@ -14,14 +14,14 @@ bool hello(const http::Request& , std::string &result) {
 bool client(const http::Request& , std::string &result) {
   std::ostringstream oss;
   time_t nnow; time(&nnow);
-  oss<< std::ctime( &nnow )<<std::endl;
+  oss<< Vx::getISO8601TimeUTCString( nnow )<<std::endl;
   GtClient::for_each_packet([&](const TDatagramPacket2& pck){
     time_t last_{pck.time};
     oss<< pck.Dtgrm.Type <<"; "
         << pck.Dtgrm.Name <<"; "
         << pck.Dtgrm.Size <<"; "
         << pck.tick <<"; "
-        << std::ctime( &last_ ) <<"; "
+        << Vx::getISO8601TimeUTCString( last_ ) <<"; "
         << std::endl;
   });
   result = oss.str();
@@ -32,7 +32,7 @@ bool client(const http::Request& , std::string &result) {
 bool server(const http::Request& , std::string &result) {
   std::ostringstream oss;
   time_t nnow; time(&nnow);
-  oss<< std::ctime( &nnow )<<std::endl;
+  oss<< Vx::getISO8601TimeUTCString( nnow )<<std::endl;
   auto filter = GtServer::get_filter();
   if(filter)
     filter->for_each([&](auto& rec){
@@ -41,7 +41,7 @@ bool server(const http::Request& , std::string &result) {
           << rec.store.Dtgrm.Name <<"; "
           << rec.store.Dtgrm.Size <<"; "
           << rec.store.tick <<"; "
-          << std::ctime( &last_ ) <<"; "
+          << Vx::getISO8601TimeUTCString( last_ ) <<"; "
           << std::endl;
     });
   result = oss.str();
