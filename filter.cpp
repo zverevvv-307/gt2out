@@ -90,15 +90,15 @@ bool Filter::sift2(const TDatagram2& dtg2)
   pck2.msec = Vx::timestamp();
   pck2.time = Vx::time_t32_now();
 
-  int offset = rec->second.cfg.dtg_type==1 ? 1: 0;
-  if( dtg2.Type==0
-      || memcmp(
-             &pck2.Dtgrm.Data[offset],
-             &dtg2.Data[offset],
-             rec->second.cfg.datasize-offset
-             )!=0
-      )
-    pck2.tick++;//посчитаем изменение
+//  int offset = rec->second.cfg.dtg_type==1 ? 1: 0;
+//  if( dtg2.Type==0
+//      || memcmp(
+//             &pck2.Dtgrm.Data[offset],
+//             &dtg2.Data[offset],
+//             rec->second.cfg.datasize-offset
+//             )!=0
+//      )
+//    pck2.tick++;//посчитаем изменение
 
   pck2.Dtgrm = dtg2;
 
